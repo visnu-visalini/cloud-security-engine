@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudShield | AI Internet Firewall Engine</title>
+    <meta name="description" content="Machine learning powered Internet Firewall traffic inspection and classification dashboard using Random Forest trained on the real Kaggle log2.csv dataset.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Top Cyberpunk Status Banner -->
+    <header class="app-header">
+        <div class="header-container">
+            <div class="brand">
+                <div class="logo-pulse">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="brand-title">CloudShield <span class="accent-badge">AI FIREWALL</span></h1>
+                    <p class="brand-subtitle">Intelligent Traffic Classification & Threat Inspection Engine</p>
+                </div>
+            </div>
+
+            <div class="system-status-group">
+                <div class="status-pill status-online" id="statusPill">
+                    <span class="status-dot"></span>
+                    <span id="statusText">Model Active & Synchronized</span>
+                </div>
+                <div class="dataset-pill" title="Internet Firewall Dataset by Fatih Ertam">
+                    <span class="pill-icon">📊</span>
+                    <span>log2.csv (<strong id="headerRecordCount">65,532</strong> records)</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation Bar -->
+    <nav class="nav-bar" aria-label="Main Navigation">
+        <div class="nav-container">
+            <button class="nav-tab active" data-tab="console" id="tabBtnConsole">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                Live Inspection Console
+            </button>
+            <button class="nav-tab" data-tab="analytics" id="tabBtnAnalytics">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                Model Performance & Analytics
+            </button>
+            <button class="nav-tab" data-tab="dataset" id="tabBtnDataset">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                Dataset Explorer & Verification
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+        <!-- Top High-Level Metrics Strip -->
+        <section class="kpi-grid" aria-label="Key Performance Indicators">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <span class="kpi-label">TOTAL RECORDS LOADED</span>
+                    <span class="kpi-icon">📁</span>
+                </div>
+                <div class="kpi-value" id="kpiTotalRecords">65,532</div>
+                <div class="kpi-subtext">Verified 100% from Kaggle log2.csv</div>
+            </div>
+
+            <div class="kpi-card accent-glow-cyan">
+                <div class="kpi-header">
+                    <span class="kpi-label">MODEL TEST ACCURACY</span>
+                    <span class="kpi-icon">🎯</span>
+                </div>
+                <div class="kpi-value cyan-text" id="kpiAccuracy">99.77%</div>
+                <div class="kpi-subtext">13,107 held-out test records</div>
+            </div>
+
+            <div class="kpi-card accent-glow-purple">
+                <div class="kpi-header">
+                    <span class="kpi-label">WEIGHTED F1-SCORE</span>
+                    <span class="kpi-icon">⚡</span>
+                </div>
+                <div class="kpi-value purple-text" id="kpiWeightedF1">99.76%</div>
+                <div class="kpi-subtext">Balanced multi-class performance</div>
+            </div>
+
+            <div class="kpi-card accent-glow-emerald">
+                <div class="kpi-header">
+                    <span class="kpi-label">ACTIVE FIREWALL ACTIONS</span>
+                    <span class="kpi-icon">🛡️</span>
+                </div>
+                <div class="kpi-value emerald-text">4 Classes</div>
+                <div class="kpi-subtext">ALLOW · DENY · DROP · RESET-BOTH</div>
+            </div>
+        </section>
+
+        <!-- TAB 1: LIVE INSPECTION CONSOLE -->
+        <section class="tab-pane active" id="paneConsole">
+            
+            <!-- Real-World Preset Scenarios -->
+            <div class="preset-banner">
+                <div class="preset-title">
+                    <span class="pulse-indicator"></span>
+                    <strong>Quick Test Scenarios:</strong> Load actual traffic records extracted directly from log2.csv:
+                </div>
+                <div class="preset-buttons" id="presetButtons">
+                    <!-- Populated dynamically via JS from real dataset samples -->
+                    <button class="btn-preset" data-preset="allow">
+                        <span class="pill-dot emerald"></span> DNS Query (ALLOW)
+                    </button>
+                    <button class="btn-preset" data-preset="deny">
+                        <span class="pill-dot red"></span> Blocked Inbound SMB (DENY)
+                    </button>
+                    <button class="btn-preset" data-preset="drop">
+                        <span class="pill-dot amber"></span> Port Scan Probe (DROP)
+                    </button>
+                    <button class="btn-preset" data-preset="reset-both">
+                        <span class="pill-dot purple"></span> Aborted Handshake (RESET-BOTH)
+                    </button>
+                </div>
+            </div>
+
+            <div class="console-grid">
+                <!-- Inspection Input Form -->
+                <div class="glass-card form-card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Packet & Session Parameters</h2>
+                            <p class="card-subtitle">All 11 firewall attributes required for AI classification</p>
+                        </div>
+                        <button type="button" class="btn-secondary" id="btnResetForm">Reset Form</button>
+                    </div>
+
+                    <form id="inspectionForm" class="inspection-form">
+                        <div class="form-section-title">Port & NAT Addressing</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="srcPort">Source Port <span class="hint">(Client Ephemeral)</span></label>
+                                <input type="number" id="srcPort" name="Source Port" min="0" max="65535" required value="57222">
+                            </div>
+                            <div class="form-group">
+                                <label for="dstPort">Destination Port <span class="hint">(e.g. 53, 80, 443, 445)</span></label>
+                                <input type="number" id="dstPort" name="Destination Port" min="0" max="65535" required value="53">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="natSrcPort">NAT Source Port <span class="hint">(Gateway Translated)</span></label>
+                                <input type="number" id="natSrcPort" name="NAT Source Port" min="0" max="65535" required value="57222">
+                            </div>
+                            <div class="form-group">
+                                <label for="natDstPort">NAT Destination Port <span class="hint">(Gateway Destination)</span></label>
+                                <input type="number" id="natDstPort" name="NAT Destination Port" min="0" max="65535" required value="53">
+                            </div>
+                        </div>
+
+                        <div class="form-section-title">Traffic Volume & Sizing</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bytes">Total Bytes</label>
+                                <input type="number" id="bytes" name="Bytes" min="0" required value="177">
+                            </div>
+                            <div class="form-group">
+                                <label for="bytesSent">Bytes Sent</label>
+                                <input type="number" id="bytesSent" name="Bytes Sent" min="0" required value="94">
+                            </div>
+                            <div class="form-group">
+                                <label for="bytesRecv">Bytes Received</label>
+                                <input type="number" id="bytesRecv" name="Bytes Received" min="0" required value="83">
+                            </div>
+                        </div>
+
+                        <div class="form-section-title">Session Dynamics & Packet Counts</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="packets">Total Packets</label>
+                                <input type="number" id="packets" name="Packets" min="0" required value="2">
+                            </div>
+                            <div class="form-group">
+                                <label for="elapsedTime">Elapsed Time (sec)</label>
+                                <input type="number" id="elapsedTime" name="Elapsed Time (sec)" min="0" step="any" required value="30">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pktsSent">Packets Sent (pkts_sent)</label>
+                                <input type="number" id="pktsSent" name="pkts_sent" min="0" required value="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="pktsRecv">Packets Received (pkts_received)</label>
+                                <input type="number" id="pktsRecv" name="pkts_received" min="0" required value="1">
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary" id="btnInspect">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                <span>Inspect Traffic via AI</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Live Verdict & Probability Card -->
+                <div class="glass-card verdict-card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Firewall Decision Engine</h2>
+                            <p class="card-subtitle">Real-time Random Forest inference result</p>
+                        </div>
+                        <span class="live-tag">LIVE INFERENCE</span>
+                    </div>
+
+                    <div class="verdict-body">
+                        <!-- Action Badge Hero -->
+                        <div class="verdict-hero">
+                            <div class="verdict-badge-container">
+                                <div class="action-badge-hero allow" id="verdictBadge">
+                                    <span class="badge-icon" id="badgeIcon">✓</span>
+                                    <span class="badge-text" id="verdictText">ALLOW</span>
+                                </div>
+                            </div>
+                            <div class="confidence-gauge">
+                                <div class="confidence-title">Classification Confidence</div>
+                                <div class="confidence-percentage" id="confidenceValue">99.8%</div>
+                                <div class="confidence-bar-bg">
+                                    <div class="confidence-bar-fill" id="confidenceBar" style="width: 99.8%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Policy & Advice Box -->
+                        <div class="advice-box" id="adviceBox">
+                            <div class="advice-header">
+                                <span class="advice-icon">🛡️</span>
+                                <strong id="adviceTitle">Policy Verdict: Authorized Access</strong>
+                            </div>
+                            <p class="advice-desc" id="adviceDesc">
+                                The connection matches legitimate communication rules. NAT table state correctly corresponds with bidirectional packet transfer.
+                            </p>
+                        </div>
+
+                        <!-- Multi-Class Probability Distribution -->
+                        <div class="distribution-card">
+                            <div class="distribution-header">
+                                <h3>Full Softmax Probability Distribution</h3>
+                                <span class="mono-dim">RF Ensemble Voting</span>
+                            </div>
+
+                            <div class="probability-rows" id="probRows">
+                                <!-- Dynamic probability bars -->
+                                <div class="prob-row">
+                                    <div class="prob-label-group">
+                                        <span class="prob-name">ALLOW</span>
+                                        <span class="prob-val" id="probValAllow">99.8%</span>
+                                    </div>
+                                    <div class="prob-track">
+                                        <div class="prob-fill emerald" id="probFillAllow" style="width: 99.8%;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="prob-row">
+                                    <div class="prob-label-group">
+                                        <span class="prob-name">DENY</span>
+                                        <span class="prob-val" id="probValDeny">0.2%</span>
+                                    </div>
+                                    <div class="prob-track">
+                                        <div class="prob-fill red" id="probFillDeny" style="width: 0.2%;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="prob-row">
+                                    <div class="prob-label-group">
+                                        <span class="prob-name">DROP</span>
+                                        <span class="prob-val" id="probValDrop">0.0%</span>
+                                    </div>
+                                    <div class="prob-track">
+                                        <div class="prob-fill amber" id="probFillDrop" style="width: 0.0%;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="prob-row">
+                                    <div class="prob-label-group">
+                                        <span class="prob-name">RESET-BOTH</span>
+                                        <span class="prob-val" id="probValResetBoth">0.0%</span>
+                                    </div>
+                                    <div class="prob-track">
+                                        <div class="prob-fill purple" id="probFillResetBoth" style="width: 0.0%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Metadata Footer -->
+                        <div class="verdict-footer">
+                            <div class="footer-meta-item">
+                                <span class="meta-label">Inference Latency:</span>
+                                <span class="meta-value" id="inferenceTime">~2.4 ms</span>
+                            </div>
+                            <div class="footer-meta-item">
+                                <span class="meta-label">Dataset Ground Truth:</span>
+                                <span class="meta-value">Fatih Ertam (log2.csv)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: MODEL PERFORMANCE & ANALYTICS -->
+        <section class="tab-pane" id="paneAnalytics">
+            <div class="analytics-grid">
+                
+                <!-- Classification Metrics Table -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Per-Class Classification Report</h2>
+                            <p class="card-subtitle">Evaluated on 13,107 independent test samples (Stratified 20%)</p>
+                        </div>
+                        <span class="badge-pill">Test Set</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table" id="metricsTable">
+                            <thead>
+                                <tr>
+                                    <th>Action Class</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1-Score</th>
+                                    <th>Support Records</th>
+                                </tr>
+                            </thead>
+                            <tbody id="metricsTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Confusion Matrix Visualization -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Confusion Matrix</h2>
+                            <p class="card-subtitle">Predicted vs Actual counts on held-out test data</p>
+                        </div>
+                    </div>
+
+                    <div class="cm-wrapper">
+                        <div class="cm-labels-y">ACTUAL CLASS</div>
+                        <div class="cm-matrix-container">
+                            <div class="cm-labels-x">PREDICTED CLASS</div>
+                            <div class="cm-grid" id="confusionMatrixGrid">
+                                <!-- Matrix cells injected by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Importance Chart -->
+                <div class="glass-card full-width">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Random Forest Feature Importance Ranking</h2>
+                            <p class="card-subtitle">Gini impurity reduction across 100 decision trees</p>
+                        </div>
+                    </div>
+                    <div class="feature-importance-list" id="featureImportanceList">
+                        <!-- Bars injected by JS -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- TAB 3: DATASET EXPLORER & VERIFICATION -->
+        <section class="tab-pane" id="paneDataset">
+            <div class="dataset-grid">
+
+                <!-- Dataset Summary Card -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Dataset Integrity & Citation</h2>
+                            <p class="card-subtitle">Kaggle Internet Firewall Dataset verification</p>
+                        </div>
+                        <span class="badge-pill emerald-badge">Verified Authentic</span>
+                    </div>
+                    
+                    <div class="dataset-info-list">
+                        <div class="info-item">
+                            <span class="info-label">Author & Institution:</span>
+                            <span class="info-value">Fatih Ertam, Firat University, Turkey</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Source File:</span>
+                            <span class="info-value mono">data/log2.csv (~2.88 MB)</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Verified Records:</span>
+                            <span class="info-value">65,532 rows</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Attributes:</span>
+                            <span class="info-value">12 (11 traffic features + 1 Action target)</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Missing / Null Values:</span>
+                            <span class="info-value text-emerald">0 (Clean dataset)</span>
+                        </div>
+                    </div>
+
+                    <div class="class-breakdown-box">
+                        <h3 class="box-title">Target Class Distribution:</h3>
+                        <div class="class-chips" id="classChips">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Dataset Browser -->
+                <div class="glass-card full-width">
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title">Live Dataset Records (log2.csv)</h2>
+                            <p class="card-subtitle">Click "Load into Console" on any row to test in the AI inspector</p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table" id="sampleDataTable">
+                            <thead>
+                                <tr>
+                                    <th>Row ID</th>
+                                    <th>Src Port</th>
+                                    <th>Dst Port</th>
+                                    <th>NAT Src</th>
+                                    <th>NAT Dst</th>
+                                    <th>Bytes</th>
+                                    <th>Packets</th>
+                                    <th>Elapsed</th>
+                                    <th>Target Action</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sampleTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Notification Overlay -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

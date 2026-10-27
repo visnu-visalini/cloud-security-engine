@@ -1,0 +1,158 @@
+{
+  "model_name": "Random Forest Classifier",
+  "n_estimators": 100,
+  "train_samples": 52425,
+  "test_samples": 13107,
+  "features": [
+    "Source Port",
+    "Destination Port",
+    "NAT Source Port",
+    "NAT Destination Port",
+    "Bytes",
+    "Bytes Sent",
+    "Bytes Received",
+    "Packets",
+    "Elapsed Time (sec)",
+    "pkts_sent",
+    "pkts_received"
+  ],
+  "classes": [
+    "allow",
+    "deny",
+    "drop",
+    "reset-both"
+  ],
+  "metrics": {
+    "accuracy": 0.99771,
+    "precision_macro": 0.93501,
+    "recall_macro": 0.81644,
+    "f1_macro": 0.84788,
+    "precision_weighted": 0.99758,
+    "recall_weighted": 0.99771,
+    "f1_weighted": 0.99755
+  },
+  "per_class_metrics": {
+    "allow": {
+      "precision": 0.9999,
+      "recall": 0.9995,
+      "f1_score": 0.9997,
+      "support": 7528
+    },
+    "deny": {
+      "precision": 0.9937,
+      "recall": 0.9967,
+      "f1_score": 0.9952,
+      "support": 2998
+    },
+    "drop": {
+      "precision": 0.9965,
+      "recall": 0.9969,
+      "f1_score": 0.9967,
+      "support": 2570
+    },
+    "reset-both": {
+      "precision": 0.75,
+      "recall": 0.2727,
+      "f1_score": 0.4,
+      "support": 11
+    }
+  },
+  "confusion_matrix": {
+    "labels": [
+      "allow",
+      "deny",
+      "drop",
+      "reset-both"
+    ],
+    "matrix": [
+      [
+        7524,
+        3,
+        0,
+        1
+      ],
+      [
+        1,
+        2988,
+        9,
+        0
+      ],
+      [
+        0,
+        8,
+        2562,
+        0
+      ],
+      [
+        0,
+        8,
+        0,
+        3
+      ]
+    ]
+  },
+  "feature_importance": [
+    {
+      "feature": "Destination Port",
+      "importance": 0.23444,
+      "percentage": 23.44
+    },
+    {
+      "feature": "Elapsed Time (sec)",
+      "importance": 0.19723,
+      "percentage": 19.72
+    },
+    {
+      "feature": "NAT Source Port",
+      "importance": 0.1461,
+      "percentage": 14.61
+    },
+    {
+      "feature": "NAT Destination Port",
+      "importance": 0.13875,
+      "percentage": 13.87
+    },
+    {
+      "feature": "Packets",
+      "importance": 0.06509,
+      "percentage": 6.51
+    },
+    {
+      "feature": "Bytes",
+      "importance": 0.05957,
+      "percentage": 5.96
+    },
+    {
+      "feature": "pkts_received",
+      "importance": 0.04675,
+      "percentage": 4.67
+    },
+    {
+      "feature": "Source Port",
+      "importance": 0.04633,
+      "percentage": 4.63
+    },
+    {
+      "feature": "Bytes Sent",
+      "importance": 0.03742,
+      "percentage": 3.74
+    },
+    {
+      "feature": "Bytes Received",
+      "importance": 0.02667,
+      "percentage": 2.67
+    },
+    {
+      "feature": "pkts_sent",
+      "importance": 0.00165,
+      "percentage": 0.16
+    }
+  ],
+  "training_duration_seconds": 1.12,
+  "evaluation_duration_seconds": 0.0761,
+  "dataset_info": {
+    "total_records": 65532,
+    "author": "Fatih Ertam, Firat University, Turkey",
+    "file": "log2.csv"
+  }
+}
